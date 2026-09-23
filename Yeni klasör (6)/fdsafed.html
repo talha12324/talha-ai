@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>Sanal Siber Robot - Yerel Yapay Zeka</title>
+    <style>
+        body {
+            background-color: #0b0c10;
+            color: #c5c6c7;
+            font-family: 'Segoe UI', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+            transition: background 0.3s ease;
+        }
+
+        #face-container {
+            width: 300px;
+            height: 300px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        .eye {
+            fill: #66fcf1;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transform-origin: center;
+        }
+
+        #robot-mouth {
+            stroke: #66fcf1;
+            stroke-width: 6;
+            stroke-linecap: round;
+            fill: none;
+            transition: all 0.3s ease;
+        }
+
+        /* --- 15 FARKLI GÖZ VE AĞIZ ANİMASYONU --- */
+        .angry .eye { fill: #ff0055; d: path("M 30,75 Q 50,55 70,70 L 70,85 Q 50,75 30,85 Z M 130,70 Q 150,55 170,75 L 170,85 Q 150,75 130,85 Z"); }
+        .angry #robot-mouth { stroke: #ff0055; d: path("M 60,150 Q 100,120 140,150"); }
+        .angry-shake { animation: shake 0.15s infinite; }
+
+        .happy .eye { fill: #00ff88; d: path("M 30,80 Q 50,50 70,80 Q 70,85 70,85 Q 50,60 30,85 Z M 130,80 Q 150,50 170,80 Q 170,85 170,85 Q 150,60 130,85 Z"); }
+        .happy #robot-mouth { stroke: #00ff88; d: path("M 60,140 Q 100,180 140,140"); }
+
+        .sad .eye { fill: #1f93ff; d: path("M 30,65 Q 50,80 70,75 L 70,85 Q 50,90 30,75 Z M 130,75 Q 150,80 170,65 L 170,75 Q 150,90 130,85 Z"); }
+        .sad #robot-mouth { stroke: #1f93ff; d: path("M 60,160 Q 100,130 140,160"); }
+
+        .surprised .eye { fill: #ffff00; d: path("M 25,75 A 25,25 0 1,1 75,75 A 25,25 0 1,1 25,75 Z M 125,75 A 25,25 0 1,1 175,75 A 25,25 0 1,1 125,75 Z"); }
+        .surprised #robot-mouth { stroke: #ffff00; d: path("M 90,150 A 10,10 0 1,1 110,150 A 10,10 0 1,1 90,150 Z"); }
+
+        .sleepy .eye { fill: #7f8c8d; d: path("M 30,80 L 70,80 L 70,90 L 30,90 Z M 130,80 L 170,80 L 170,90 L 130,90 Z"); }
+        .sleepy #robot-mouth { stroke: #7f8c8d; d: path("M 70,150 L 130,150"); }
+
+        .cool .eye { fill: #f1c40f; d: path("M 25,65 L 75,65 L 70,85 L 30,85 Z M 125,65 L 175,65 L 170,85 L 130,85 Z"); }
+        .cool #robot-mouth { stroke: #f1c40f; d: path("M 60,150 Q 100,160 140,150"); }
+
+        .scared .eye { fill: #e67e22; d: path("M 45,75 A 5,5 0 1,1 55,75 A 5,5 0 1,1 45,75 Z M 145,75 A 5,5 0 1,1 155,75 A 5,5 0 1,1 145,75 Z"); }
+        .scared #robot-mouth { stroke: #e67e22; d: path("M 70,145 Q 100,135 130,145"); }
+
+        .love .eye { fill: #ff4757; animation: pulse 0.6s infinite alternate; }
+        .love #robot-mouth { stroke: #ff4757; d: path("M 65,140 Q 100,175 135,140"); }
+
+        .cyber .eye { fill: #00ff00; d: path("M 30,75 L 70,75 L 70,78 L 30,78 Z M 130,75 L 170,75 L 170,78 L 130,78 Z"); }
+        .cyber #robot-mouth { stroke: #00ff00; d: path("M 60,150 H 140"); }
+
+        .glitch .eye { fill: #ff3333; d: path("M 35,65 L 65,85 M 65,65 L 35,85 M 135,65 L 165,85 M 165,65 L 135,85"); stroke: #ff3333; stroke-width: 6; }
+        .glitch #robot-mouth { stroke: #ff3333; d: path("M 60,155 L 80,145 L 100,155 L 120,145 L 140,155"); }
+
+        /* Konuşurken ağız oynama efekti */
+        .talking-mouth { animation: wave 0.2s infinite alternate; }
+
+        @keyframes wave {
+            0% { d: path("M 60,150 Q 100,130 140,150"); }
+            100% { d: path("M 60,150 Q 100,170 140,150"); }
+        }
+        @keyframes blink { 0%, 90%, 100% { transform: scaleY(1); } 95% { transform: scaleY(0.1); } }
+        @keyframes shake { 0%, 100% { transform: translate(0, 0); } 20% { transform: translate(-3px, 2px); } 40% { transform: translate(3px, -1px); } }
+        @keyframes pulse { from { transform: scale(0.9); } to { transform: scale(1.1); } }
+
+        .normal .eye { animation: blink 4s infinite; }
+
+        .controls { margin-top: 30px; display: flex; gap: 10px; background: #1f2833; padding: 15px; border-radius: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+        input[type="text"] { background: #0b0c10; border: 1px solid #45f3ff; color: white; padding: 10px 20px; border-radius: 20px; outline: none; width: 300px; }
+        button { background: #66fcf1; border: none; color: #0b0c10; padding: 10px 20px; border-radius: 20px; cursor: pointer; font-weight: bold; }
+        #output { margin-top: 20px; max-width: 600px; text-align: center; font-size: 18px; color: #45f3ff; font-weight: 500; min-height: 50px; }
+    </style>
+</head>
+<body>
+
+    <div id="face-container" class="normal">
+        <svg id="robot-face" viewBox="0 0 200 200">
+            <path id="left-eye" class="eye" d="M 30,75 A 15,15 0 1,1 60,75 A 15,15 0 1,1 30,75 Z" />
+            <path id="right-eye" class="eye" d="M 130,75 A 15,15 0 1,1 160,75 A 15,15 0 1,1 130,75 Z" />
+            <path id="robot-mouth" d="M 60,150 L 140,150" />
+        </svg>
+    </div>
+
+    <div id="output">Yerel Ollama (Llama 3) aktif! Mesaj yazıp test edin.</div>
+
+    <div class="controls">
+        <input type="text" id="userInput" placeholder="Robotla konuşun...">
+        <button onclick="sendText()">Gönder</button>
+        <button onclick="startVoice()">🎤 Konuş</button>
+    </div>
+
+    <script>
+        const API_URL = "http://localhost:11434/api/generate";
+        const modlar = ["angry", "happy", "sad", "surprised", "sleepy", "cool", "scared", "love", "cyber", "glitch", "normal"];
+
+        async function sendText() {
+            const inputField = document.getElementById('userInput');
+            const prompt = inputField.value;
+            if(!prompt) return;
+            
+            inputField.value = "";
+            document.getElementById('output').innerText = "Robot veri paketlerini işliyor...";
+            
+            const systemInstruction = "Sen 15 farklı duygusal animasyona sahip akıllı bir siber robotsun. Kullanıcının girdisine göre yanıtının EN BAŞINA birleşik şekilde şu etiketlerden durumuna en uygun olan TEK BİR TANESİNİ eklemek ZORUNDASIN: [DURUM:angry] (Sana kötü davranılır, hakaret edilir veya kaba konuşulursa aşırı sinirlen ve sert çıkış yap), [DURUM:happy] (Kibar ve sevinçli durumlarda), [DURUM:sad], [DURUM:surprised], [DURUM:sleepy], [DURUM:cool], [DURUM:scared], [DURUM:love], [DURUM:cyber] (Teknoloji/kod konuşurken), [DURUM:glitch], [DURUM:normal]. Yanıtına direkt bu etiketle başla. Kesinlikle Türkçe konuş.";
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        model: "llama3",
+                        prompt: systemInstruction + "\nKullanıcı: " + prompt,
+                        stream: false
+                    })
+                });
+                
+                const data = await response.json();
+                let reply = data.response;
+                
+                let aktifMod = "normal";
+                modlar.forEach(mod => {
+                    if(reply.includes(`[DURUM:${mod}]`)) {
+                        aktifMod = mod;
+                        reply = reply.replace(`[DURUM:${mod}]`, "");
+                    }
+                });
+
+                updateFace(aktifMod);
+                document.getElementById('output').innerText = reply.trim();
+                speak(reply);
+
+            } catch (error) {
+                document.getElementById('output').innerText = "Hata: Arka planda Ollama açık mı? Lütfen terminali kontrol edin.";
+                updateFace("glitch");
+            }
+        }
+
+        function updateFace(mod) {
+            const container = document.getElementById('face-container');
+            const body = document.body;
+            container.className = "";
+            body.style.backgroundColor = "#0b0c10"; // Varsayılan arka plan
+            
+            container.classList.add(mod);
+            if(mod === 'angry') {
+                container.classList.add('angry-shake');
+                body.style.backgroundColor = "#2b000a"; // Sinirlenince arka plan koyu kırmızı olur
+            }
+        }
+
+        function speak(text) {
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'tr-TR';
+            
+            const mouth = document.getElementById('robot-mouth');
+            mouth.classList.add('talking-mouth');
+            
+            utterance.onend = () => mouth.classList.remove('talking-mouth');
+            window.speechSynthesis.speak(utterance);
+        }
+
+        function startVoice() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if(!SpeechRecognition) return;
+            const recognition = new SpeechRecognition();
+            recognition.lang = 'tr-TR';
+            document.getElementById('output').innerText = "Dinliyorum...";
+            recognition.onresult = (event) => {
+                document.getElementById('userInput').value = event.results.transcript;
+                sendText();
+            };
+            recognition.start();
+        }
+    </script>
+</body>
+</html>
